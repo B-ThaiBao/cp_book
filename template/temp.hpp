@@ -7,8 +7,7 @@
 #include <bits/stdc++.h>
 
 int32_t main() {
-	using namespace std;
-	ios_base::sync_with_stdio(false), cin.tie(nullptr);
+	std::ios_base::sync_with_stdio(false), std::cin.tie(nullptr);
 	
 	
 	return 0;
