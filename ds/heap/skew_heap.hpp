@@ -71,7 +71,7 @@ std::vector<T> dijkstra_skew_heap(const G& g, const int &s, std::vector<int>& pe
 	int root = s;
 
 	auto merge = [&](auto&& merge, int x, int y) -> int {
-		if (x == - 1) return y; 
+		if (x == - 1) return y;
 		if (y == - 1) return x;
 		if (nodes[x].key > nodes[y].key) std::swap(x, y);
 		nodes[x].R = merge(merge, nodes[x].R, y);
@@ -92,7 +92,7 @@ std::vector<T> dijkstra_skew_heap(const G& g, const int &s, std::vector<int>& pe
 			if (g.is_ignore(id)) continue;
 			const auto& e = g.edges[id];
 			int to = e.from ^ e.to ^ cur;
-			if (pe[to] == - 1) {
+			if (dist[to] == INF_COST) {
 				dist[to] = dist[cur] + e.cost;
 				pe[to] = id;
 				nodes[to].key = dist[to];
