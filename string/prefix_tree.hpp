@@ -38,10 +38,10 @@ struct prefix_tree : std::vector<prefix_tree_node> {
 	template <typename String> inline int build(const String& S, const int& d) {
 		int r = 0;
 		for (const auto& ch : S) {
-			this->at(r).num_starts++;
+			this->at(r).num_starts += d;
 			r = this->next(r, ch);
 		}
-		this->at(r).num_starts++;
+		this->at(r).num_starts += d;
 		return r;
 	}
 
