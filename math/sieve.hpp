@@ -24,7 +24,7 @@ template <typename T, typename Q = T> struct range_sieve : public std::vector<bo
 			primes.push_back(p);
 			for (Q j = p * p; j <= sq; j += p) is_primes[j] = true;
 		}
-		this->assign(R - L, true);
+		this->assign(R - L + 1, true);
 		for (const Q& p: primes) {
 			for (Q j = std::max(p * p, Q(L + p - 1) / p * p); j <= R; j += p) {
 				this->at(j - L) = false;
