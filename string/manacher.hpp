@@ -51,7 +51,6 @@ struct manacher : public std::vector<int> {
 	inline bool is_palindrome(const int& l, const int& r) const {
 		if (l >= r) return false;
 		auto p = l + r - 1;
-		if (p & 1) return r - l <= (this->at(p) << 1);
-		return r - l <= (this->at(p) << 1) + 1;
+		return r - l <= (this->at(p) << 1) + ((p & 1) ^ 1);
 	}
 };
