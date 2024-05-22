@@ -51,7 +51,7 @@ template <typename T, typename Comp = std::less<T>> struct range_min_query {
 	void build_mask_and_sparse() {
 		mask.assign(N, uint32_t());
 		sparse.assign(N, int32_t());
-		for (uint32_t i = 0, num = 0; i < N; mask[i ++] = (num |= 1)) {
+		for (uint32_t i = 0, num = 0; i < uint32_t(N); mask[i ++] = (num |= 1)) {
 			num <<= 1;
 			while (num > 0 && comp(data[i], data[i - least_bit(num)])) {
 				num ^= (num & (- num));
@@ -70,47 +70,45 @@ template <typename T, typename Comp = std::less<T>> struct range_min_query {
 	}
 
 	range_min_query() {}
-	explicit range_min_query(std::vector<T>&& v, const Comp& comp = Comp()) {
+	explicit range_min_query(std::vector<T>&& v, const Comp& com = Comp()) : comp(com) {
 		N = int32_t(v.size());
 		data = std::forward<std::vector<T>>(v);
-		this -> comp = comp;
-		this -> build_mask_and_sparse();
+		this->build_mask_and_sparse();
 	}
-	template <typename Vec> explicit range_min_query(const Vec& v, const Comp& comp = Comp()) {
+	template <typename Vec> explicit range_min_query(const Vec& v, const Comp& com = Comp()) : comp(com) {
 		N = int32_t(v.size());
-		// debug(N);
 		data = v;
-		this -> comp = comp;
-		this -> build_mask_and_sparse();
+		this->build_mask_and_sparse();
 	}
-	void build(std::vector<T>&& v, const Comp& comp = Comp()) {
+	void build(std::vector<T>&& v, const Comp& com = Comp()) {
 		N = int32_t(v.size());
 		data = std::forward<std::vector<T>>(v);
-		this -> comp = comp;
-		this -> build_mask_and_sparse();
+		this->comp = com;
+		this->build_mask_and_sparse();
 	}
-	template <typename Vec> void build(const Vec& v, const Comp& comp = Comp()) {
+	template <typename Vec> void build(const Vec& v, const Comp& com = Comp()) {
 		N = int32_t(v.size());
 		data = v;
-		this -> comp = comp;
-		this -> build_mask_and_sparse();
+		this->comp = com;
+		this->build_mask_and_sparse();
 	}
 
+	// Return the index and the value of the minimum element in [L, R)
 	std::pair<int32_t, T> range_query(const int32_t& L, const int32_t& R) const {
-		if (R - L + 1 <= BUCKET_SIZE) {
-			int32_t idx = small_range_query(R, R - L + 1);
+		if (R - L <= BUCKET_SIZE) {
+			int32_t idx = small_range_query(R - 1, R - L);
 			return std::make_pair(idx, data[idx]);
 		}
 
 		int32_t res = small_range_query(L + BUCKET_SIZE - 1);
-		int32_t bucket_l = (L >> BUCKET_SIZE_LOG) + 1, bucket_r = (R >> BUCKET_SIZE_LOG) - 1;
+		int32_t bucket_l = (L >> BUCKET_SIZE_LOG) + 1, bucket_r = ((R - 1) >> BUCKET_SIZE_LOG) - 1;
 		if (bucket_l <= bucket_r) {
 			const int32_t j = log_2(bucket_r - bucket_l + 1);
 			const int32_t num_blocks = N >> BUCKET_SIZE_LOG;
 			res = index(res, sparse[num_blocks * j + bucket_l]);
 			res = index(res, sparse[num_blocks * j + bucket_r - (1 << j) + 1]);
 		}
-		res = index(res, small_range_query(R));
+		res = index(res, small_range_query(R - 1));
 		return std::make_pair(res, data[res]);
 	}
 };
