@@ -1,7 +1,7 @@
 #ifdef THAI_BAO
 #include <cp_book/debug.hpp>
 #else
-#define debug(...) 2004
+#define debug(...)
 #endif
 
 #include <bits/stdc++.h>
