@@ -172,26 +172,34 @@ template <typename T> struct binary_indexed_tree : public std::vector<T> {
 
 	static constexpr int log_2(const int& P) { return 31 - __builtin_clz(P); }
 
-	int lower_bound(const T& V) const {
+	template <typename V, typename F = std::plus<T>>
+	inline int lower_bound(const V& val, const F& op = F()) const {
 		T sum{};
 		int pos = 0;
-		int N = this->size();
+		int N = int(this->size());
 		for (int i = log_2(N); i >= 0; --i) {
-			if (pos + (1 << i) <= N && sum + this->at(pos + (1 << i) - 1) < V) {
-				sum = sum + this->at(pos + (1 << i) - 1);
-				pos += (1 << i);
+			if (pos + (1 << i) <= N) {
+				auto cur = op(sum, this->at(pos + (1 << i) - 1));
+				if (cur < T(val)) {
+					sum = cur;
+					pos += (1 << i);
+				}
 			}
 		}
 		return pos + 1;
 	}
-	int upper_bound(const T& V) const {
+	template <typename V, typename F = std::plus<T>>
+	inline int upper_bound(const V& val, const F& op = F()) const {
 		T sum{};
 		int pos = 0;
-		int N = this->size();
+		int N = int(this->size());
 		for (int i = log_2(N); i >= 0; --i) {
-			if (pos + (1 << i) <= N && sum + this->at(pos + (1 << i) - 1) <= V) {
-				sum = sum - this->at(pos + (1 << i) - 1);
-				pos += (1 << i);
+			if (pos + (1 << i) <= N) {
+				auto cur = op(sum, this->at(pos + (1 << i) - 1));
+				if (cur <= T(val)) {
+					sum = cur;
+					pos += (1 << i);
+				}
 			}
 		}
 		return pos + 1;

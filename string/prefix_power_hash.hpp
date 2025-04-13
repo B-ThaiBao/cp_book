@@ -12,120 +12,88 @@
  *   * Compare: compare(A, B) [- 1, 1]
 **/
 struct hashnum {
+	using value_type = uint64_t;
 	static constexpr uint64_t MOD = 18446744069414584321LLU;
-	uint64_t value;
+	value_type v;
 
-	static constexpr uint64_t modulo(const __uint128_t& y){
-		// Too magic ????
+	static constexpr uint64_t modulo(const __uint128_t& y) {
 		/**
 		 * Copied from:
 		 *  https://nyaannyaan.github.io/library/ntt/arbitrary-ntt-mod18446744069414584321.hpp
 		**/
 		uint64_t l = y & uint64_t(- 1);
 		uint64_t m = (y >> 64) & unsigned(-1);
-		uint64_t h = y >> 96;
+		uint64_t h = uint64_t(y >> 96);
 		uint64_t u = h + m + (m ? MOD - (m << 32) : 0);
-		uint64_t v = MOD <= l ? l - MOD : l;
-		return v - u + (v < u ? MOD : 0);
+		uint64_t n = MOD <= l ? l - MOD : l;
+		return n - u + (n < u ? MOD : 0);
 	}
 
-	constexpr hashnum() : value() {}
-	template <typename U>
-	hashnum(const U& x) {
-		if (x >= 0 && x < MOD) value = static_cast<uint64_t>(x);
-		else if (x > - MOD && x < 0) value = static_cast<uint64_t>(x + MOD);
-		else if (x > MOD) value = modulo(x);
-		else if (x < - MOD) value = (x % MOD) + MOD;
-		else if (x == MOD || x == - MOD) value = 0;
+	constexpr hashnum() : v(0) {}
+	template <typename U> hashnum(const U& x) {
+		if (x >= 0 && x < MOD) v = static_cast<uint64_t>(x);
+		else if (x > - MOD && x < 0) v = static_cast<uint64_t>(x + MOD);
+		else if (x > MOD) v = modulo(x);
+		else if (x < - MOD) v = (x % MOD) + MOD;
+		else if (x == MOD || x == - MOD) v = 0;
 	}
-	const uint64_t& operator () () const { return value; }
+	const uint64_t& operator () () const { return v; }
 	template <typename U>
-	explicit operator U() const { return static_cast<U>(value); }
+	explicit operator U() const { return static_cast<U>(v); }
 	constexpr static uint64_t mod() { return MOD; }
-	template <typename U> friend U& operator << (U& out, const hashnum& o) { return out << o.value; }
-	template <typename U> friend U& operator >> (U& in, hashnum& o) { int64_t v; in >> v; o = hashnum(v); return in; }
-	friend void __print(const hashnum& o) { std::cerr << '{' << o.value << '}'; }
-	friend std::string to_string(const hashnum& o) { return std::to_string(o.value); }
-	friend bool is_zero(const hashnum& o) { return o.value == uint64_t(0); }
-	friend const uint64_t& abs(const hashnum& x) { return x.value; }
+	template <typename U> friend U& operator << (U& out, const hashnum& o) { return out << o.v; }
+	template <typename U> friend U& operator >> (U& in, hashnum& o) { int64_t n; in >> n; o = hashnum(n); return in; }
+	friend void __print(const hashnum& o) { std::cerr << '{' << o.v << '}'; }
+	friend std::string to_string(const hashnum& o) { return std::to_string(o.v); }
+	friend bool is_zero(const hashnum& o) { return o.v == uint64_t(0); }
+	friend const uint64_t& abs(const hashnum& x) { return x.v; }
 
 	// This is comparision (Rare but still happen)
-	friend bool operator == (const hashnum& x, const hashnum& y) { return x.value == y.value; }
-	template <typename U> friend bool operator == (const hashnum& x, const U& y) { return x == hashnum(y); }
-	template <typename U> friend bool operator == (const U& x, const hashnum& y) { return hashnum(x) == y; }
-
-	friend bool operator != (const hashnum& x, const hashnum& y) { return x.value != y.value; }
-	template <typename U> friend bool operator != (const hashnum& x, const U& y) { return x != hashnum(y); }
-	template <typename U> friend bool operator != (const U& x, const hashnum& y) { return hashnum(x) != y; }
-
-	friend bool operator < (const hashnum& x, const hashnum& y) { return x.value < y.value; }
-	template <typename U> friend bool operator < (const hashnum& x, const U& y) { return x < hashnum(y); }
-	template <typename U> friend bool operator < (const U& x, const hashnum& y) { return hashnum(x) < y; }
-
-	friend bool operator <= (const hashnum& x, const hashnum& y) { return x.value <= y.value; }
-	template <typename U> friend bool operator <= (const hashnum& x, const U& y) { return x <= hashnum(y); }
-	template <typename U> friend bool operator <= (const U& x, const hashnum& y) { return hashnum(x) <= y; }
-
-	friend bool operator > (const hashnum& x, const hashnum& y) { return x.value > y.value; }
-	template <typename U> friend bool operator > (const hashnum& x, const U& y) { return x > hashnum(y); }
-	template <typename U> friend bool operator > (const U& x, const hashnum& y) { return hashnum(x) > y; }
-
-	friend bool operator >= (const hashnum& x, const hashnum& y) { return x.value >= y.value; }
-	template <typename U> friend bool operator >= (const hashnum& x, const U& y) { return x >= hashnum(y); }
-	template <typename U> friend bool operator >= (const U& x, const hashnum& y) { return hashnum(x) >= y; }
-
+	friend bool operator == (const hashnum& x, const hashnum& y) { return x.v == y.v; }
+	friend bool operator != (const hashnum& x, const hashnum& y) { return x.v != y.v; }
+	friend bool operator < (const hashnum& x, const hashnum& y) { return x.v < y.v; }
+	friend bool operator <= (const hashnum& x, const hashnum& y) { return x.v <= y.v; }
+	friend bool operator > (const hashnum& x, const hashnum& y) { return x.v > y.v; }
+	friend bool operator >= (const hashnum& x, const hashnum& y) { return x.v >= y.v; }
 	hashnum& operator += (const hashnum& o) {
-		if (value < MOD - o.value) value = value - (MOD - o.value) + MOD;
-		else value -= (MOD - o.value);
+		if (v < MOD - o.v) v = v - (MOD - o.v) + MOD;
+		else v -= (MOD - o.v);
 		return *this;
 	}
 	hashnum& operator -= (const hashnum& o) {
-		if (value < o.value) value = value - o.value + MOD;
-		else value -= o.value;
+		if (v < o.v) v = v - o.v + MOD;
+		else v -= o.v;
 		return *this;
 	}
-	template <typename U> hashnum& operator += (const U& other) { return *this += hashnum(other); }
-	template <typename U> hashnum& operator -= (const U& other) { return *this -= hashnum(other); }
 	hashnum& operator ++ () {
-		++ value;
-		if (value == MOD) value = 0;
+		++ v;
+		if (v == MOD) v = 0;
 		return *this;
 	}
 	hashnum& operator -- () {
-		if (value == 0) value = MOD;
-		-- value;
+		if (v == 0) v = MOD;
+		-- v;
 		return *this;
 	}
-	hashnum operator ++ (int) { hashnum result(*this); ++ (*this); return result; }
-	hashnum operator -- (int) { hashnum result(*this); -- (*this); return result; }
+	hashnum operator ++ (int) { hashnum r(*this); ++ (*this); return r; }
+	hashnum operator -- (int) { hashnum r(*this); -- (*this); return r; }
 	hashnum operator - () const {
 		hashnum res;
-		res.value = value ? MOD - value : 0;
+		res.v = v ? MOD - v : 0;
 		return res;
 	}
 	hashnum operator + () const { return hashnum(*this); }
 
-	hashnum& operator /= (const hashnum& other) { return *this *= bin_pow(other, MOD - 2); }
+	hashnum& operator /= (const hashnum& o) { return *this *= bin_pow(o, MOD - 2); }
 	hashnum& operator *= (const hashnum& o) {
-		value = modulo(__uint128_t(value) * o.value); // Can optimized this ???
+		v = modulo(__uint128_t(v) * o.v); // Can optimized this ???
 		return *this;
 	}
 
 	friend hashnum operator + (const hashnum& x, const hashnum& y) { return hashnum(x) += y; }
-	template <typename U> friend hashnum operator + (const hashnum& x, const U& y) { return hashnum(x) += y; }
-	template <typename U> friend hashnum operator + (const U& x, const hashnum& y) { return hashnum(x) += y; }
-
 	friend hashnum operator - (const hashnum& x, const hashnum& y) { return hashnum(x) -= y; }
-	template <typename U> friend hashnum operator - (const hashnum& x, const U& y) { return hashnum(x) -= y; }
-	template <typename U> friend hashnum operator - (const U& x, const hashnum& y) { return hashnum(x) -= y; }
-
 	friend hashnum operator * (const hashnum& x, const hashnum& y) { return hashnum(x) *= y; }
-	template <typename U> friend hashnum operator * (const hashnum& x, const U& y) { return hashnum(x) *= y; }
-	template <typename U> friend hashnum operator * (const U& x, const hashnum& y) { return hashnum(x) *= y; }
-
 	friend hashnum operator / (const hashnum& x, const hashnum& y) { return hashnum(x) /= y; }
-	template <typename U> friend hashnum operator / (const hashnum& x, const U& y) { return hashnum(x) /= y; }
-	template <typename U> friend hashnum operator / (const U& x, const hashnum& y) { return hashnum(x) /= y; }
 
 	template <typename U> friend hashnum bin_pow(const hashnum& a, const U& b) {
 		// assert(b >= 0);

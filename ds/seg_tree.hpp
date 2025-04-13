@@ -1,75 +1,74 @@
 /**
  * SEG_TREE
- * 
+ *
  * Description: The fundamental ideas are that we decompose any range into O(log n)
- *   nodes of the tree, and you can use pass a callback to many iterator methods to
- *   iterate over that subset or their parents.
- * 
+ *  nodes of the tree, and you can use pass a callback to many iterator methods to
+ *  iterate over that subset or their parents.
  * Copied code from: https://codeforces.com/contest/1916/submission/239673725
- * 
- * Usages:
- *   For point_t p (node number on tree):
- *     * Get children: p.c(0), p.c(1)
- *     * For all nodes which range's node contain range's p and iterate up to root: for_ancestor_up
- *     * Same but iterate from root to leaf: for_ancestor_down
- * 
- *   For range_t r (multiple nodes on tree that represent the range in array):
- *     * Iterate decomposed range in each nodes and from left to right: for_range
- *     * Same but end function when condition is true: for_range_with_condition
- *     * Same but from right to left: for_reverse_range
- *     * And also end with true condition: for_reverse_range_with_condition
- *     * Iterate over the range from outside - in: for_each or for_each_with_side
- * 
- *     * Iterate up all ancestors of all decomposed nodes: for_ancestor_up
- *     * Same but iterate down: for_ancestor_down
- *   
- *   Based on node distribution, we have two type of tree:
- *     * in_order_tree: normal tree but compressed to fit into 2 * N nodes
- *     * circular_tree: weird tree but really fast (based on Codeforce blog)
- * 
+ *
+ * Usage:
+ *  For point_t p (node number on tree):
+ *   * Get children: p.c(0), p.c(1)
+ *   * For all nodes which range's node contain range's p and iterate up to root: for_ancestor_up
+ *   * Same but iterate from root to leaf: for_ancestor_down
+ *
+ *  For range_t r (multiple nodes on tree that represent the range in array):
+ *   * Iterate decomposed range in each nodes and from left to right: for_range
+ *   * Same but end function when condition is true: for_range_with_condition
+ *   * Same but from right to left: for_reverse_range
+ *   * And also end with true condition: for_reverse_range_with_condition
+ *   * Iterate over the range from outside - in: for_each or for_each_with_side
+ *
+ *   * Iterate up all ancestors of all decomposed nodes: for_ancestor_up
+ *   * Same but iterate down: for_ancestor_down
+ *
+ *  Based on node distribution, we have two type of tree:
+ *   * in_order_tree: normal tree but compressed to fit into 2 * N nodes
+ *   * circular_tree: weird tree but really fast (based on Codeforce blog)
+ *
  * More deatail usages:
- *   Make a function update for internal nodes in tree: auto update = ...
- *   Make a function downdate for internal nodes in tree (lazy propagation): auto downdate = ...
- * 
- *   With point_update/range_query:
- *     * Update at index i:
- *         seg_tree::point_t pt = seg.point(i);
- *         ** Change at leaf node pt (i.e segs[pt] = val) **
- *         pt.for_ancestor_up(update)  
- * 
- *     * Get query in range [L, R]:
- *         seg_tree::range_t rng = seg.range(L, R + 1);
- *         ** Iterate nodes in range (i.e rng.for_range(...)) **
- * 
- *   With range_update/point_query:
- *     * Update range [L, R]:
- *         seg_tree::range_t r = seg.range(L, R + 1);
- *         ** Update at some nodes lazily (i.e rng.for_range(...)) **
- * 
- *     * Get query at index i:
- *         seg_tree::point_t pt = seg.point(i);
- *         ** Go up to root and get info from internal nodes **
- * 
- *   With range_update/range_query (lazy propagation):
- *     * Update range [L, R]:
- *         seg_tree::range_t rng = seg.range(L, R + 1);
- *         rng.for_ancestor_down(downdate);
- *         ** Iterate all internal nodes inside range and update it **
- *         rng.for_ancestor_up(update);
- * 
- *     * Get query in range [L, R]:
- *         seg_tree::range_t rng = seg.range(L, R + 1);
- *         rng.for_ancestor_down(downdate);
- *         ** Iterate all internal nodes inside range and get infor it **
- * 
- *   For binary_search on the seg_tree in O(log_2(N)):
+ *  Make a function update for internal nodes in tree: auto update = ...
+ *  Make a function downdate for internal nodes in tree (lazy propagation): auto downdate = ...
+ *
+ * With point_update/range_query:
+ *  * Update at index i:
+ *     seg_tree::point_t pt = seg.point(i);
+ *     ** Change at leaf node pt (i.e segs[pt] = val) **
+ *     pt.for_ancestor_up(update)
+ *
+ *  * Get query in range [L, R]:
  *     seg_tree::range_t rng = seg.range(L, R + 1);
- *     seg_tree::point_t pt = rng.for_range_with_condition(...);
- *     downdate(pt); // very important, if not this node can node downdate anything
- *     int idx = seg.for_descendant(pt, [&](seg_tree::point_t p) {
- *         downdate(p);
- *         check_point(p);
- *     });
+ *     ** Iterate nodes in range (i.e rng.for_range(...)) **
+ *
+ * With range_update/point_query:
+ *  * Update range [L, R]:
+ *     seg_tree::range_t r = seg.range(L, R + 1);
+ *     ** Update at some nodes lazily (i.e rng.for_range(...)) **
+ *
+ *  * Get query at index i:
+ *     seg_tree::point_t pt = seg.point(i);
+ *     ** Go up to root and get info from internal nodes **
+ *
+ * With range_update/range_query (lazy propagation):
+ *  * Update range [L, R]:
+ *     seg_tree::range_t rng = seg.range(L, R + 1);
+ *     rng.for_ancestor_down(downdate);
+ *     ** Iterate all internal nodes inside range and update it **
+ *     rng.for_ancestor_up(update);
+ *
+ *  * Get query in range [L, R]:
+ *     seg_tree::range_t rng = seg.range(L, R + 1);
+ *     rng.for_ancestor_down(downdate);
+ *     ** Iterate all internal nodes inside range and get infor it **
+ *
+ * For binary_search on the seg_tree in O(log_2(N)):
+ *  seg_tree::range_t rng = seg.range(L, R + 1);
+ *  seg_tree::point_t pt = rng.for_range_with_condition(...);
+ *  downdate(pt); // very important, if not this node can node downdate anything
+ *  int idx = seg.for_descendant(pt, [&](seg_tree::point_t p) {
+ *      downdate(p);
+ *      check_point(p);
+ *  });
 **/
 namespace seg_tree {
 
@@ -309,7 +308,7 @@ struct in_order_tree {
 		int a = int(pt);
 		while (a < N) {
 			if (check_point(point_t((a << 1)))) a <<= 1;
-			else a = (a << 1) + 1; 
+			else a = (a << 1) + 1;
 		}
 		return leaf_index(point_t(a));
 	}
@@ -318,7 +317,7 @@ struct in_order_tree {
 		int a = int(pt);
 		while (a < N) {
 			if (check_point(point_t((a << 1) + 1))) a = (a << 1) + 1;
-			else a <<= 1; 
+			else a <<= 1;
 		}
 		return leaf_index(point_t(a));
 	}
@@ -359,7 +358,6 @@ struct circular_tree {
 	inline int node_split(const point_t& pt) const {
 		// With node pt, 2 child is c[0] and c[1] with [L, M) and [M, R)
 		// We try to find the value M (middle point)
-		int a = int(pt);
 		return node_bound(pt.c(0))[1];
 	}
 	inline int node_size(const point_t& pt) const {

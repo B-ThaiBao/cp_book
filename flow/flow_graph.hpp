@@ -1,4 +1,4 @@
-template <typename flow_t> struct flow_network {
+template <typename flow_t> struct flow_graph {
 	static constexpr flow_t eps = flow_t(1e-9);
 	struct edge_t {
 		int from;
@@ -10,9 +10,9 @@ template <typename flow_t> struct flow_network {
 	std::vector<std::vector<int>> adj;
 	std::vector<edge_t> edges;
 
-	flow_network() {}
-	flow_network(const int& N) : V(N), adj(N) {}
-	flow_network(const int& N, const int& M) : V(N), adj(N) {
+	flow_graph() {}
+	flow_graph(const int& N) : V(N), adj(N) {}
+	flow_graph(const int& N, const int& M) : V(N), adj(N) {
 		edges.reserve(M << 1); // Avoid relocation
 	}
 
@@ -29,7 +29,7 @@ template <typename flow_t> struct flow_network {
 	}
 };
 
-template <typename flow_t, typename cost_t> struct cost_flow_network {
+template <typename flow_t, typename cost_t> struct cost_flow_graph {
 	static constexpr flow_t eps = flow_t(1e-9);
 	struct edge_t {
 		int from;
@@ -42,9 +42,9 @@ template <typename flow_t, typename cost_t> struct cost_flow_network {
 	std::vector<std::vector<int>> adj;
 	std::vector<edge_t> edges;
 
-	cost_flow_network() {}
-	cost_flow_network(const int& N) : V(N), adj(N) {}
-	cost_flow_network(const int& N, const int& M) : V(N), adj(N) {
+	cost_flow_graph() {}
+	cost_flow_graph(const int& N) : V(N), adj(N) {}
+	cost_flow_graph(const int& N, const int& M) : V(N), adj(N) {
 		edges.reserve(M << 1); // Avoid relocation
 	}
 

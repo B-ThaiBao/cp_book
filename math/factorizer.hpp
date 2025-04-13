@@ -1,6 +1,5 @@
 // Copied from: https://judge.yosupo.jp/submission/189742
 // NOTE: This supports for number that fixed into "uint64_t type" (Larger type doesn't allowed)
-
 struct factorizer {
 	static std::vector<int> min_prime;
 	static std::vector<int> primes;
@@ -97,8 +96,8 @@ struct factorizer {
 		}
 		if (is_prime(N)) return {{N, 1}};
 
-		auto g = [](const T& N) -> T {
-			const factorizer_mod m(N);
+		auto g = [](const T& Q) -> T {
+			const factorizer_mod m(Q);
 
 			constexpr uint64_t C_first = 1;
 			constexpr uint64_t C_second = 2;
@@ -110,8 +109,8 @@ struct factorizer {
 				uint64_t z_first = Z_first;
 				uint64_t z_second = Z_second;
 				for (size_t k = M;; k *= 2) {
-					const uint64_t x_first = z_first + N;
-					const uint64_t x_second = z_second + N;
+					const uint64_t x_first = z_first + Q;
+					const uint64_t x_second = z_second + Q;
 					for (size_t j = 0; j < k; j += M) {
 						const uint64_t y_first = z_first;
 						const uint64_t y_second = z_second;
@@ -132,25 +131,25 @@ struct factorizer {
 						q_second = m.multiply(q_second, x_second - z_second);
 
 						const uint64_t q_t = m.multiply(q_first, q_second);
-						const uint64_t g_t = std::__gcd<uint64_t>(N, q_t);
+						const uint64_t g_t = std::__gcd<uint64_t>(Q, q_t);
 						if(g_t == 1) continue;
-						if(g_t != N) return g_t;
+						if(g_t != Q) return g_t;
 
-						const uint64_t g_first = std::__gcd<uint64_t>(N, q_first);
-						const uint64_t g_second = std::__gcd<uint64_t>(N, q_second);
+						const uint64_t g_first = std::__gcd<uint64_t>(Q, q_first);
+						const uint64_t g_second = std::__gcd<uint64_t>(Q, q_second);
 
 						const uint64_t C = g_first != 1 ? C_first : C_second;
 						const uint64_t x = g_first != 1 ? x_first : x_second;
 						uint64_t z = g_first != 1 ? y_first : y_second;
-						uint64_t g = g_first != 1 ? g_first : g_second;
+						uint64_t G = g_first != 1 ? g_first : g_second;
 
-						if (g == N) {
+						if (G == Q) {
 							do {
 								z = m.fast_mod(z, z, C);
-								g = std::__gcd<uint64_t>(N, x - z);
-							} while(g == 1);
+								G = std::__gcd<uint64_t>(Q, x - z);
+							} while(G == 1);
 						}
-						if (g != N) return g;
+						if (G != Q) return G;
 
 						Z_first += 2; Z_second += 2;
 						goto try_find_divisor;

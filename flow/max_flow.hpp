@@ -90,89 +90,111 @@ template <typename flow_t> struct dinic_max_flow {
 	}
 };
 
-// Don't know why it works, just copied from: https://loj.ac/s/1488185
+// Don't know why it works, just copied from:
+//   https://github.com/koosaga/olympiad/blob/master/Library/codes/combinatorial_optimization/flow.cpp
+// Tested: https://loj.ac/s/2083847
 // flow_t = double may be give wrong flow (never check it !!!)
 // Time: O(V ^ 2 * sqrt(E))
 // Just use when dinic gives TLE
 template <typename flow_t> struct hlpp_max_flow {
-	static constexpr flow_t INF_FLOW = std::numeric_limits<flow_t>::max() / 2;
-	std::vector<int> nxt;
 	std::vector<int> lst;
 	std::vector<flow_t> excess;
 	std::vector<int> arc;
 	std::vector<int> nxt_gap;
 	std::vector<int> prv_gap;
 	std::vector<int> depth;
+	std::vector<int> active;
 	std::vector<int> q;
 
 	int max_depth;
-	int max_gap;
 	int cnt;
+	int cut;
 
 	inline void init(const int& N) {
-		nxt.assign(N, 0);
+		active.assign(N << 1, 0);
 		lst.assign(N, 0);
 		excess.assign(N, 0);
 		arc.assign(N, 0);
-		nxt_gap.assign(N << 1, 0);
-		prv_gap.assign(N << 1, 0);
-		depth.assign(N, 0);
+		nxt_gap.assign(3 * N, 0);
+		prv_gap.assign(3 * N, 0);
+		depth.assign(N, N << 1);
 		q.assign(N, 0);
-		max_depth = max_gap = cnt = 0;
+		max_depth = cut = cnt = 0;
 	}
 
 	hlpp_max_flow() {}
-	hlpp_max_flow(const int& N) { init(N); }
+	hlpp_max_flow(const int& N) { this->init(N); }
 
-	inline void push_lst(const int& h, const int& u) {
-		nxt[u] = lst[h]; lst[h] = u;
-	}
 	template <typename Network>
-	inline void update_depth(const Network& g, const int& v, int nh) {
-		if (depth[v] != g.V) {
-			nxt_gap[prv_gap[v]] = nxt_gap[v];
-			prv_gap[nxt_gap[v]] = prv_gap[v];
-		}
+	inline void update_depth(const Network& g, int v, int nh) {
+#ifdef _GLIBCXX_DEBUG
+		assert(0 <= v && v < g.V);
+#endif
+		prv_gap[nxt_gap[prv_gap[v]] = nxt_gap[v]] = prv_gap[v];
 		depth[v] = nh;
-		if (nh == g.V) return;
-		max_gap = std::max(max_gap, nh);
 		if (excess[v] > g.eps) {
+			lst[v] = active[nh]; active[nh] = v;
 			max_depth = std::max(max_depth, nh);
-			push_lst(nh, v);
 		}
-		nh += g.V;
-		nxt_gap[v] = nxt_gap[nh];
-		prv_gap[v] = nh;
-		nxt_gap[nh] = v;
-		prv_gap[nxt_gap[v]] = v;
+		if (nh < g.V) cut = std::max(cut, nh + 1);
+		nxt_gap[v] = nxt_gap[prv_gap[v] = nh += g.V];
+		prv_gap[nxt_gap[nxt_gap[nh] = v]] = v;
 	}
 	template <typename Network>
 	inline void global_relabel(const Network& g, const int& s, const int& t) {
-		cnt = 0;
-		std::fill(depth.begin(), depth.end(), g.V);
-		std::fill(lst.begin(), lst.end(), - 1);
+#ifdef _GLIBCXX_DEBUG
+		assert(0 <= s && s < g.V);
+		assert(0 <= t && t < g.V);
+#endif
+		std::fill(depth.begin(), depth.end(), g.V << 1);
+		std::fill(active.begin(), active.end(), -1);
 		std::iota(nxt_gap.begin(), nxt_gap.end(), 0);
 		std::iota(prv_gap.begin(), prv_gap.end(), 0);
-		depth[t] = 0; q[0] = t;
-		for (int i = 0, j = 1; i != j; ++ i) {
-			const auto& u = q[i];
-			for (const auto& id : g.adj[u]) {
-				const auto& e = g.edges[id];
-				const auto& back = g.edges[id ^ 1];
-				if (depth[e.to] == g.V && back.cap - back.flow > g.eps) {
-					update_depth(g, e.to, depth[u] + 1);
-					q[j ++] = e.to;
+		max_depth = cnt = cut = 0;
+		depth[t] = 0; depth[s] = g.V;
+
+		{ // Starting with t
+			q[0] = t;
+			for (int i = 0, j = 1; i < j; ++i) {
+				const auto& v = q[i];
+				for (const auto& id : g.adj[v]) {
+					const auto& e = g.edges[id];
+					const auto& back_e = g.edges[id ^ 1];
+					if (depth[e.to] == (g.V << 1) && back_e.cap - back_e.flow > g.eps) {
+						q[j++] = e.to;
+						this->update_depth(g, e.to, depth[v] + 1);
+					}
 				}
 			}
-			max_depth = max_gap = depth[u];
+		}
+
+		{ // Starting with s
+			q[0] = s;
+			for (int i = 0, j = 1; i < j; ++i) {
+				const auto& v = q[i];
+				for (const auto& id : g.adj[v]) {
+					const auto& e = g.edges[id];
+					const auto& back_e = g.edges[id ^ 1];
+					if (depth[e.to] == (g.V << 1) && back_e.cap - back_e.flow > g.eps) {
+						q[j++] = e.to;
+						this->update_depth(g, e.to, depth[v] + 1);
+					}
+				}
+			}
 		}
 	}
 	template <typename Network>
-	inline void push(Network& g, const int& u, const int& id) {
+	inline void push(Network& g, const int& u, const int& id, const bool& z) {
+#ifdef _GLIBCXX_DEBUG
+		assert(0 <= u && u < g.V);
+#endif
 		auto& e = g.edges[id];
 		flow_t x = std::min<flow_t>(excess[u], e.cap - e.flow);
 		if (x > g.eps) {
-			if (excess[e.to] <= g.eps && excess[e.to] >= 0) push_lst(depth[e.to], e.to);
+			if (z && 0 <= excess[e.to] && excess[e.to] <= g.eps) {
+				lst[e.to] = active[depth[e.to]];
+				active[depth[e.to]] = e.to;
+			}
 			e.flow += x;
 			g.edges[id ^ 1].flow -= x;
 			excess[u] -= x;
@@ -180,76 +202,66 @@ template <typename flow_t> struct hlpp_max_flow {
 		}
 	}
 	template <typename Network>
-	inline void discharge(Network& g, const int& u) {
-		int nh = g.V;
-		for (int i = arc[u]; i != int(g.adj[u].size()); ++ i) {
-			const auto& e = g.edges[g.adj[u][i]];
+	inline void discharge(Network& g, const int& v) {
+#ifdef _GLIBCXX_DEBUG
+		assert(0 <= v && v < g.V);
+#endif
+		int h = g.V << 1, k = depth[v];
+ 
+		for(int j = 0; j < int(g.adj[v].size()); j++){
+			const auto& e = g.edges[g.adj[v][arc[v]]];
 			if (e.cap - e.flow > g.eps) {
-				if (depth[u] == depth[e.to] + 1) {
-					push(g, u, g.adj[u][i]);
-					if (excess[u] <= g.eps) {
-						arc[u] = i; return;
-					}
+				if (k == depth[e.to] + 1) {
+					this->push(g, v, g.adj[v][arc[v]], true);
+					if (excess[v] <= g.eps) return;
 				} else {
-					nh = std::min(nh, depth[e.to] + 1);
+					h = std::min(h, depth[e.to] + 1);
 				}
 			}
+			if (++arc[v] >= int(g.adj[v].size())) arc[v] = 0;
 		}
-
-		for (int i = 0; i != arc[u]; ++ i) {
-			const auto& e = g.edges[g.adj[u][i]];
-			if (e.cap - e.flow > g.eps) {
-				if (depth[u] == depth[e.to] + 1) {
-					push(g, u, g.adj[u][i]);
-					if (excess[u] <= 0) {
-						arc[u] = i; return;
-					}
-				} else {
-					nh = std::min(nh, depth[e.to] + 1);
+		if (k < g.V && nxt_gap[k + g.V] == prv_gap[k + g.V]) {
+			for (int j = k; j < cut; j++) {
+				while (nxt_gap[j + g.V] < g.V) {
+					this->update_depth(g, nxt_gap[j + g.V], g.V);
 				}
 			}
-		}
-		++ cnt;
-		if (nxt_gap[nxt_gap[depth[u] + g.V]] != depth[u] + g.V) {
-			update_depth(g, u, nh);
+			cut = k;
 		} else {
-			const int& prv_depth = depth[u];
-			for (int h = prv_depth; h <= max_gap; ++ h) {
-				for (int i = nxt_gap[h + g.V]; i < g.V; i = nxt_gap[i]) {
-					depth[i] = g.V;
-				}
-				nxt_gap[h + g.V] = prv_gap[h + g.V] = h + g.V;
-			}
-			max_gap = prv_depth - 1;
+			this->update_depth(g, v, h), ++cnt;
 		}
 	}
 	template <typename Network>
 	flow_t max_flow(Network& g, const int& s, const int& t) {
-		excess[s] = INF_FLOW; excess[t] = - INF_FLOW;
-		global_relabel(g, s, t);
+#ifdef _GLIBCXX_DEBUG
+		assert(0 <= s && s < g.V);
+		assert(0 <= t && t < g.V);
+#endif
 		for (const auto& id : g.adj[s]) {
-			push(g, s, id);
+			excess[s] = g.edges[id].cap - g.edges[id].flow;
+			this->push(g, s, id, false);
 		}
-		for (; max_depth >= 0; -- max_depth) {
-			while (lst[max_depth] != - 1) {
-				int u = lst[max_depth];
-				lst[max_depth] = nxt[u];
-				if (depth[u] == max_depth) {
+		global_relabel(g, s, t);
+		for (; max_depth > 0; --max_depth) {
+			while (active[max_depth] != -1) {
+				int u = active[max_depth];
+				active[max_depth] = lst[u];
+				if (u != s && depth[u] == max_depth) {
 					discharge(g, u);
 					if (cnt > (g.V << 2)) {
-						global_relabel(g, s, t);
+						this->global_relabel(g, s, t);
 					}
 				}
 			}
 		}
-		return excess[t] + INF_FLOW;
+		return excess[t];
 	}
 
 	template <typename Network>
 	std::vector<bool> min_cut(const Network& g) {
 		std::vector<bool> res(g.V);
 		for (int i = 0; i < g.V; ++ i) {
-			res[i] = (depth[i] != g.V);
+			res[i] = (depth[i] < g.V);
 		}
 		return res;
 		// Return a side of each node

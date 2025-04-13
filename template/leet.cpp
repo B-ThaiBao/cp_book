@@ -1,9 +1,3 @@
-#ifdef THAI_BAO
-#include <cp_book/debug.hpp>
-#else
-#define debug(...)
-#endif
-
 #include <bits/stdc++.h>
 
 struct Solution {

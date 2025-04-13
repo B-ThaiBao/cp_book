@@ -4,20 +4,16 @@
 //   - Merge: If two sets have the same query-index (called i) so i-th query can be answer.
 //            The remaining query-index can be merge like normal and meet in the next merging
 //   - Find_par: unchange
-struct disjoint_set {
+struct disjoint_set_size {
 	int N;
 	std::vector<int> data;
 
-	disjoint_set() {}
-	disjoint_set(const int& N) : N(N), data(N, - 1) {}
+	disjoint_set_size() {}
+	disjoint_set_size(const int& N_) : N(N_), data(N_, -1) {}
 
-	int size(const int& x) { return - data[find_par(x)]; }
+	int size(const int& x) { return -data[find_par(x)]; }
 	const int& size() const { return N; }
-
-	void init(const int& N) {
-		this -> N = N;
-		data.assign(N, - 1);
-	}
+	void init(const int& N_) { this->N = N_; data.assign(N_, -1); }
 
 	int find_par(const int& x) {
 		return data[x] < 0 ? x : data[x] = find_par(data[x]);
@@ -32,19 +28,19 @@ struct disjoint_set {
 
 	bool merge_par(const int& a, const int& b) {
 		data[a] += data[b];
-		data[b] = a; -- N;
+		data[b] = a; --N;
 		return true;
 	}
 	template <typename F>
 	bool merge_par(const int& a, const int& b, const F& f) {
 		f(a, b);
 		data[a] += data[b];
-		data[b] = a; -- N;
+		data[b] = a; --N;
 		return true;
 	}
 
 	bool merge(int a, int b) {
-		a = find_par(a); 
+		a = find_par(a);
 		b = find_par(b);
 		if (a == b) return false;
 		if (data[a] > data[b]) std::swap(a, b);
@@ -52,7 +48,7 @@ struct disjoint_set {
 		return true;
 	}
 	template <typename F> bool merge(int a, int b, const F& f) {
-		a = find_par(a); 
+		a = find_par(a);
 		b = find_par(b);
 		if (a == b) return false;
 		if (data[a] > data[b]) std::swap(a, b);
@@ -70,18 +66,18 @@ struct disjoint_set {
 	}
 };
 
-struct bipartite_graph : public disjoint_set {
+struct bipartite_graph : public disjoint_set_size {
 	/**
 	 * TODO: Try to keep the bipartite of components
 	 * by using disjoint set and based on the property:
 	 *  The bipartite graph doesn't allow odd cycle !!!
 	**/
-	using disjoint_set::data;
+	using disjoint_set_size::data;
 	std::vector<bool> is;
 	std::vector<bool> p;
 
 	bipartite_graph() {}
-	bipartite_graph(const int& N) : disjoint_set(N) {
+	bipartite_graph(const int& N) : disjoint_set_size(N) {
 		is.assign(N, true);
 		p.assign(N, true);
 	}
@@ -126,14 +122,14 @@ struct disjoint_set_ancestor {
 	std::vector<int> data;
 
 	disjoint_set_ancestor() {}
-	disjoint_set_ancestor(const int& N) : N(N), data(N) {
+	disjoint_set_ancestor(const int& N_) : N(N_), data(N_) {
 		std::iota(data.begin(), data.end(), 0);
 	}
 	const int& size() const { return N; }
 
-	void init(const int& N) {
-		this -> N = N;
-		data.resize(N);
+	void init(const int& N_) {
+		this->N = N_;
+		data.resize(N_);
 		std::iota(data.begin(), data.end(), 0);
 	}
 
@@ -149,25 +145,25 @@ struct disjoint_set_ancestor {
 	}
 
 	bool merge_par(const int& a, const int& b) {
-		data[b] = a; -- N;
+		data[b] = a; --N;
 		return true;
 	}
 	template <typename F>
 	bool merge_par(const int& a, const int& b, const F& f) {
 		f(a, b);
-		data[b] = a; -- N;
+		data[b] = a; --N;
 		return true;
 	}
 
 	bool merge(int a, int b) {
-		a = find_par(a); 
+		a = find_par(a);
 		b = find_par(b);
 		if (a == b) return false;
 		merge_par(a, b);
 		return true;
 	}
 	template <typename F> bool merge(int a, int b, const F& f) {
-		a = find_par(a); 
+		a = find_par(a);
 		b = find_par(b);
 		if (a == b) return false;
 		merge_par(a, b, f);
@@ -178,6 +174,71 @@ struct disjoint_set_ancestor {
 		a = find_par(a ,get);
 		b = find_par(b, get);
 		if (a == b) return false;
+		merge_par(a, b, f);
+		return true;
+	}
+};
+
+struct disjoint_set_size {
+	int N;
+	std::vector<int> data;
+
+	disjoint_set_size() {}
+	disjoint_set_size(const int& N_) : N(N_), data(N_, -1) {}
+
+	int size(const int& x) { return -data[find_par(x)]; }
+	const int& size() const { return N; }
+	void init(const int& N_) { this->N = N_; data.assign(N_, -1); }
+	inline int& operator [] (const int& x) { return data[x]; }
+	inline const int& operator [] (const int& x) const { return data[x]; }
+
+	int find_par(int x) const {
+		while (data[x] >= 0) x = data[x];
+		return x;
+	}
+	template <typename F> int find_par(const int& x, const F& f) {
+		if (data[x] < 0) return x;
+		int root = find_par(data[x], f);
+		// TODO: We already go par, now we try to get from par (like dist, ...)
+		f(data[x], x);
+		return root;
+	}
+
+	bool merge_par(const int& a, const int& b) {
+		data[a] += data[b];
+		data[b] = a; --N;
+		return true;
+	}
+	template <typename F>
+	bool merge_par(const int& a, const int& b, const F& f) {
+		f(a, b);
+		data[a] += data[b];
+		data[b] = a; --N;
+		return true;
+	}
+
+	bool merge(int a, int b) {
+		a = find_par(a);
+		b = find_par(b);
+		if (a == b) return false;
+		if (data[a] > data[b]) std::swap(a, b);
+		merge_par(a, b);
+		return true;
+	}
+	template <typename F> bool merge(int a, int b, const F& f) {
+		a = find_par(a);
+		b = find_par(b);
+		if (a == b) return false;
+		if (data[a] > data[b]) std::swap(a, b);
+		merge_par(a, b, f);
+		return true;
+	}
+	template <typename P, typename F>
+	bool merge(int a, int b, const P& get, const F& f) {
+		a = find_par(a, get);
+		b = find_par(b, get);
+		if (a == b) return false;
+		if (data[a] > data[b]) std::swap(a, b);
 		merge_par(a, b, f);
 		return true;
 	}

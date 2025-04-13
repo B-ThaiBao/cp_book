@@ -51,7 +51,7 @@ template <typename T> struct undigraph : public graph<T> {
 		return frm ^ e.from ^ e.to;
 	}
 
-	static constexpr bool is_ignore(const int& id) { return false; }
+	static constexpr bool is_ignore(const int&) { return false; }
 };
 
 template <typename T> struct digraph : public graph<T> {
@@ -81,7 +81,7 @@ template <typename T> struct digraph : public graph<T> {
 		return frm ^ e.from ^ e.to;
 	}
 
-	static constexpr bool is_ignore(const int& id) { return false; }
+	static constexpr bool is_ignore(const int&) { return false; }
 };
 
 template <typename T, typename F = std::function<bool(int)>>
