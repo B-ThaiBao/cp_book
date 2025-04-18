@@ -64,6 +64,9 @@
  * For binary_search on the seg_tree in O(log_2(N)):
  *  seg_tree::range_t rng = seg.range(L, R + 1);
  *  seg_tree::point_t pt = rng.for_range_with_condition(...);
+ *  if (pt == -1) return -1;
+ *  if (seg.is_leaf(pt)) return pt;
+ *
  *  downdate(pt); // very important, if not this node can node downdate anything
  *  int idx = seg.for_descendant(pt, [&](seg_tree::point_t p) {
  *      downdate(p);
@@ -142,15 +145,15 @@ struct range_t {
 	// Iterate over the range from outside-in.
 	template <typename F> void for_each(const F& f) const {
 		for (int x = a, y = b; x < y; x >>= 1, y >>= 1) {
-			if (x & 1) f(point_t(x ++));
-			if (y & 1) f(point_t(-- y));
+			if (x & 1) f(point_t(x++));
+			if (y & 1) f(point_t(--y));
 		}
 	}
 	// NOTE: Calls f(point_t a, bool is_right)
 	template <typename F> void for_each_with_side(const F& f) const {
 		for (int x = a, y = b; x < y; x >>= 1, y >>= 1) {
-			if (x & 1) f(point_t(x ++), false);
-			if (y & 1) f(point_t(-- y), true);
+			if (x & 1) f(point_t(x++), false);
+			if (y & 1) f(point_t(--y), true);
 		}
 	}
 
@@ -184,7 +187,7 @@ struct range_t {
 			if (f(point_t(((a - 1) >> i) + 1))) return point_t(((a - 1) >> i) + 1);
 			v ^= (1 << i);
 		}
-		return point_t(- 1);
+		return point_t(-1);
 	}
 
 	// Iterate over the range from left to right.
@@ -201,7 +204,7 @@ struct range_t {
 			if (f(point_t((b >> i) - 1))) return point_t((b >> i) - 1);
 			v ^= (1 << i);
 		}
-		return point_t(- 1);
+		return point_t(-1);
 	}
 
 	// Iterate over the range from right to left.
@@ -226,10 +229,10 @@ struct range_t {
 		int dx = __builtin_ctz(x);
 		int dy = __builtin_ctz(y);
 		int anc_depth = floor_log_2((x - 1) ^ y);
-		for (int i = floor_log_2(x); i > dx; -- i) {
+		for (int i = floor_log_2(x); i > dx; --i) {
 			f(point_t(x >> i));
 		}
-		for (int i = anc_depth; i > dy; -- i) {
+		for (int i = anc_depth; i > dy; --i) {
 			f(point_t(y >> i));
 		}
 	}
@@ -240,7 +243,7 @@ struct range_t {
 		int dx = __builtin_ctz(x);
 		int dy = __builtin_ctz(y);
 		int anc_depth = floor_log_2((x - 1) ^ y);
-		for (int i = dx + 1; i <= anc_depth; ++ i) {
+		for (int i = dx + 1; i <= anc_depth; ++i) {
 			f(point_t(x >> i));
 		}
 		for (int v = y >> (dy + 1); v; v >>= 1) {
@@ -308,7 +311,8 @@ struct in_order_tree {
 		int a = int(pt);
 		while (a < N) {
 			if (check_point(point_t((a << 1)))) a <<= 1;
-			else a = (a << 1) + 1;
+			else if (check_point(point_t((a << 1) + 1))) a = (a << 1) + 1;
+			else return -1;
 		}
 		return leaf_index(point_t(a));
 	}
@@ -317,7 +321,8 @@ struct in_order_tree {
 		int a = int(pt);
 		while (a < N) {
 			if (check_point(point_t((a << 1) + 1))) a = (a << 1) + 1;
-			else a <<= 1;
+			else if (check_point(point_t((a << 1)))) a <<= 1;
+			else return -1;
 		}
 		return leaf_index(point_t(a));
 	}
