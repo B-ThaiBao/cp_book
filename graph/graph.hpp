@@ -1,6 +1,6 @@
 /**
  * GRAPH !!!
- * 
+ *
  * This graph template store the edge by using indicies so that
  * can apply for multiple edge with same node. For this reason,
  * lots of algorithm on the graph template can be written much
