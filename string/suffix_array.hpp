@@ -275,7 +275,7 @@ struct suffix_array : public std::vector<int32_t> {
 		(*this).resize(N + 1);
 		// for (const auto& s : S) assert(index_t(s) >= 0);
 		int sigma = N ? *std::max_element(S.begin(), S.end()) + 1 : 0;
-		std::vector<index_t> tmp(std::max(N, sigma << 1));
+		std::vector<index_t> tmp(sigma + std::max(N, sigma << 1));
 		sais<String>(N, S, (*this).data(), sigma, tmp.data());
 		(*this).erase((*this).begin());
 	}
