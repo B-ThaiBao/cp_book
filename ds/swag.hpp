@@ -1,6 +1,10 @@
 /**
  * SWAG (Sliding Window Aggregation) !!
  *
+ * Sources:
+ * - https://codeforces.com/blog/entry/97396 (Square Root Optimization)
+ * - https://codeforces.com/blog/entry/122003 (Minimum deque)
+ *
  * Overview:
  * - Maintains a sliding window of elements with support for:
  *   + push_back / push_front
