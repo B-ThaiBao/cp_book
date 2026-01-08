@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
-struct Solution {
+class Solution {
+public:
 };
 
 int main() {
