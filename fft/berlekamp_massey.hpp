@@ -19,7 +19,7 @@
 template <typename Vector> static inline Vector berlekamp_massey(const Vector& A) {
 	using num = typename Vector::value_type;
 	int N = int(A.size()), L = 0;
-	std::vector<num> B, C, tmp;
+	std::vector<num> B, tmp; Vector C;
 	B.reserve(N + 1), C.reserve(N + 1), tmp.reserve(N + 1);
 	B.push_back(num(1)), C.push_back(num(1));
 
