@@ -36,13 +36,13 @@
  *     ** Change at leaf node pt (i.e segs[pt] = val) **
  *     pt.for_ancestor_up(update)
  *
- *  * Get query in range [L, R]:
- *     seg_tree::range_t rng = seg.range(L, R + 1);
+ *  * Get query in range [L, R):
+ *     seg_tree::range_t rng = seg.range(L, R);
  *     ** Iterate nodes in range (i.e rng.for_range(...)) **
  *
  * With range_update/point_query:
- *  * Update range [L, R]:
- *     seg_tree::range_t r = seg.range(L, R + 1);
+ *  * Update range [L, R):
+ *     seg_tree::range_t r = seg.range(L, R);
  *     ** Update at some nodes lazily (i.e rng.for_range(...)) **
  *
  *  * Get query at index i:
@@ -50,26 +50,26 @@
  *     ** Go up to root and get info from internal nodes **
  *
  * With range_update/range_query (lazy propagation):
- *  * Update range [L, R]:
- *     seg_tree::range_t rng = seg.range(L, R + 1);
+ *  * Update range [L, R):
+ *     seg_tree::range_t rng = seg.range(L, R);
  *     rng.for_ancestor_down(downdate);
  *     ** Iterate all internal nodes inside range and update it **
  *     rng.for_ancestor_up(update);
  *
- *  * Get query in range [L, R]:
- *     seg_tree::range_t rng = seg.range(L, R + 1);
+ *  * Get query in range [L, R):
+ *     seg_tree::range_t rng = seg.range(L, R);
  *     rng.for_ancestor_down(downdate);
  *     ** Iterate all internal nodes inside range and get infor it **
  *
  * For binary_search on the seg_tree in O(log_2(N)):
- *  seg_tree::range_t rng = seg.range(L, R + 1);
+ *  seg_tree::range_t rng = seg.range(L, R);
  *  seg_tree::point_t pt = rng.for_range_with_condition(...);
  *  if (pt == -1) return -1;
  *  if (seg.is_leaf(pt)) return pt;
  *
  *  downdate(pt); // very important, if not this node can node downdate anything
  *  int idx = seg.for_descendant(pt, [&](seg_tree::point_t p) {
- *      downdate(p);
+ *      if (seg.is_leaf(p)) downdate(p);
  *      check_point(p);
  *  });
 **/
