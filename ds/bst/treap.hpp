@@ -363,7 +363,7 @@ template <typename treap_node> struct treap_node_base {
 				nodes[i] -> par = nodes[stk.back()];
 				par_idx[i] = stk.back();
 			}
-			stk.do_downdate_back(i);
+			stk.push_back(i);
 		}
 		stk.clear();
 		for (int i = N - 1; i >= 0; -- i){
@@ -376,7 +376,7 @@ template <typename treap_node> struct treap_node_base {
 					par_idx[i] = stk.back();
 				}
 			}
-			stk.do_downdate_back(i);
+			stk.push_back(i);
 		}
 
 		int id = 0;
@@ -408,7 +408,7 @@ template <typename treap_node> struct treap_node_base {
 				nodes[i].par = &nodes[stk.back()];
 				par_idx[i] = stk.back();
 			}
-			stk.do_downdate_back(i);
+			stk.push_back(i);
 		}
 		stk.clear();
 		for (int i = N - 1; i >= 0; -- i){
@@ -421,7 +421,7 @@ template <typename treap_node> struct treap_node_base {
 					par_idx[i] = stk.back();
 				}
 			}
-			stk.do_downdate_back(i);
+			stk.push_back(i);
 		}
 
 		int id = 0;
