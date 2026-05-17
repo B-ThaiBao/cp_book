@@ -278,7 +278,7 @@ template <typename flow_t, typename cost_t> struct network_simplex {
 		next_arc = 0;
 
 		// Random permutation of the edges; helps with wide graphs and killer test cases
-		static std::mt19937 rng(random_device{}());
+		static std::mt19937 rng(std::random_device{}());
 		perm.resize(E + V);
 		std::iota(std::begin(perm), std::end(perm), 0);
 		std::shuffle(std::begin(perm), std::end(perm), rng);
