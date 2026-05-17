@@ -8,7 +8,7 @@ std::vector<int> build_span_tree(const G& g, T& sum_cost, const Comp& comp = Com
 	std::sort(order.begin(), order.end(), [&](const int& a, const int& b) {
 		return comp(g.edges[a].cost, g.edges[b].cost);
 	});
-	disjoint_set dsu(g.V);
+	disjoint_set_size dsu(g.V);
 	std::vector<int> res; res.reserve(order.size());
 	for (const auto& id : order) {
 		if (g.is_ignore(id)) continue;
