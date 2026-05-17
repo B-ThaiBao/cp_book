@@ -1,0 +1,37 @@
+# Windsurf legacy rules — cp_book
+
+> Same content as `.windsurf/rules/cp_book.md`. Kept for older
+> Windsurf versions that read the root `.windsurfrules` file.
+>
+> **Source of truth: `AGENTS.md` at the repo root and the matching
+> `.ai/modules/<folder>.md` for whatever folder you're editing.**
+
+## Style rules — match exactly, do not "improve"
+
+- Hard tabs. K&R braces. `snake_case`. `struct` (never `class`).
+- CAPS for dimension template params / constants (`N`, `M`, `K`, `MOD`).
+- Pass all inputs by `const T&` — including primitives.
+- Inherit from STL containers for vector-shaped structures.
+- Doc-block opens `/**` and closes `**/` (two stars).
+- Keep deliberate spaces inside `++ i`, `-- i`, `~ v`, `- 1`,
+  `operator <`.
+- Asserts wrapped in `#ifdef _GLIBCXX_DEBUG`.
+- Always write `std::`. No `using namespace std;` in headers.
+- SFINAE via `typename std::enable_if<…>::type`. No C++20 concepts.
+- Headers don't include `<bits/stdc++.h>`; tests include it once.
+
+## Don't
+
+- Don't reformat with `clang-format`.
+- Don't touch code you weren't asked to touch.
+- Don't introduce `shared_ptr`, `<format>`, coroutines, ranges,
+  concepts on hot paths.
+- Don't bypass `[!benchmark]`.
+- Don't add per-folder meta files inside source folders.
+
+## Do
+
+- Read `.ai/modules/<folder>.md` first.
+- Add a regression test alongside any library patch
+  (see `library_fixes.md`).
+- Mirror source layout when adding tests.
